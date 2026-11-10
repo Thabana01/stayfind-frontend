@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaLink, FaCheckCircle, FaChartBar, FaMapMarkerAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { FaLink, FaCheckCircle, FaChartBar, FaMapMarkerAlt, FaMoneyBillWave, FaRobot, FaFileImage } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
 import AdminReports from '../components/AdminReports';
 
@@ -10,6 +10,9 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // 🆕 State to view a user's uploaded document
+  const [viewingDoc, setViewingDoc] = useState(null);
 
   const fetchData = () => {
     Promise.all([
@@ -42,7 +45,6 @@ const AdminDashboard = () => {
       .catch(() => alert("Error approving user"));
   };
 
-  // ✏️ EDITED: reads affectedProperties from backend and shows what happened
   const handleSuspendUser = (userId, currentStatus, role) => {
     const newStatus = currentStatus === 'Suspended' ? 'Active' : 'Suspended';
     const verb = newStatus === 'Suspended' ? 'suspend' : 'activate';
@@ -153,7 +155,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* ✏️ EDITED: Colours 'Blocked' red, 'Occupied' amber, 'Available' teal */}
         <div className="card">
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaChartBar color="var(--primary)" /> Availability Status</h3>
           <div style={{ height: 300, marginTop: '20px' }}>
@@ -187,6 +188,7 @@ const AdminDashboard = () => {
               <th>Name</th>
               <th>Role</th>
               <th>Verification Details</th>
+              <th>AI Document Check</th>
               <th>Verification</th>
               <th>Account Status</th>
               <th>Actions</th>
@@ -204,6 +206,27 @@ const AdminDashboard = () => {
                   {u.role === 'student' && <span style={{ fontSize: '0.85rem' }}>ID: {u.student_number || 'N/A'}</span>}
                   {u.role === 'landlord' && <span style={{ fontSize: '0.85rem' }}>{u.property_details || 'N/A'}</span>}
                 </td>
+
+                {/* 🆕 AI DOCUMENT VERIFICATION COLUMN */}
+                <td>
+                  {u.document_url ? (
+                    <button 
+                      onClick={() => setViewingDoc(u)}
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: '5px',
+                        background: u.ai_verification_status === 'Verified' ? '#dcfce7' : '#fef2f2', 
+                        color: u.ai_verification_status === 'Verified' ? '#166534' : '#b42318', 
+                        border: 'none', padding: '5px 10px', borderRadius: '4px', 
+                        cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold'
+                      }}
+                    >
+                      <FaFileImage /> {u.ai_verification_status === 'Verified' ? 'View Verified Doc' : 'View Doc'}
+                    </button>
+                  ) : (
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>No doc uploaded</span>
+                  )}
+                </td>
+
                 <td>
                   <span className={`badge ${u.verification_status === 'Approved' ? 'badge-green' : 'badge-yellow'}`}>
                     {u.verification_status}
@@ -221,7 +244,6 @@ const AdminDashboard = () => {
                         Approve
                       </button>
                     )}
-                    {/* ✏️ EDITED: pass role too so we can warn about property blocking */}
                     <button 
                       onClick={() => handleSuspendUser(u.id, u.account_status, u.role)} 
                       className={`btn ${u.account_status === 'Suspended' ? 'btn-primary' : 'btn-danger'}`} 
@@ -236,6 +258,37 @@ const AdminDashboard = () => {
           </tbody>
         </table>
       </div>
+
+      {/* 🆕 DOCUMENT VIEWER MODAL */}
+      {viewingDoc && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div style={{ background: 'white', borderRadius: '12px', maxWidth: '600px', width: '100%', padding: '30px', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+            <button 
+              onClick={() => setViewingDoc(null)}
+              style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748b' }}
+            >
+              ×
+            </button>
+            <h3 style={{ marginTop: 0, color: 'var(--text-main)' }}>Document Review: {viewingDoc.full_name}</h3>
+            
+            <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
+              <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 10px 0', color: '#166534' }}>
+                <FaRobot /> AI Verification Result
+              </h4>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: '#475467' }}>
+                {viewingDoc.ai_verification_note || 'No AI notes available.'}
+              </p>
+            </div>
+
+            <h4 style={{ color: '#475467', marginBottom: '10px' }}>Uploaded Image:</h4>
+            <img 
+              src={viewingDoc.document_url} 
+              alt="User Document" 
+              style={{ width: '100%', borderRadius: '8px', border: '1px solid #cbd5e1' }} 
+            />
+          </div>
+        </div>
+      )}
 
       {/* 🆕 SCAM REPORTS PANEL */}
       <AdminReports onRefreshDashboard={fetchData} />

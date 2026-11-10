@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { FaUserGraduate, FaHome, FaUser, FaEnvelope, FaPhone, FaLock, FaArrowLeft, FaEye, FaEyeSlash, FaIdCard } from 'react-icons/fa';
+import { FaUserGraduate, FaHome, FaUser, FaEnvelope, FaPhone, FaLock, FaArrowLeft, FaEye, FaEyeSlash, FaIdCard, FaFileUpload, FaRobot, FaCheckCircle } from 'react-icons/fa';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -15,9 +15,26 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // 🆕 DOCUMENT UPLOAD & AI STATES
+  const [documentFile, setDocumentFile] = useState(null);
+  const [documentPreview, setDocumentPreview] = useState('');
+  const [aiScanning, setAiScanning] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+  };
+
+  // 🆕 Handle File Selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setDocumentFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setDocumentPreview(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -29,8 +46,15 @@ const Register = () => {
       return;
     }
 
+    // 🆕 Require document upload before submitting
+    if (!documentFile) {
+      setError(role === 'student' ? "Please upload your Admission Letter." : "Please upload your Chief Letter.");
+      return;
+    }
+
     setLoading(true);
 
+    // 1. Register the user
     axios.post('https://stayfind-backend-etba.onrender.com/api/auth/register', {
       full_name: formData.name,
       email: formData.email,
@@ -40,14 +64,30 @@ const Register = () => {
       property_details: formData.property_details
     })
     .then(res => {
-      alert('✅ Account created! Please wait for an Admin to verify your account before logging in.');
-      navigate('/login');
+      const userId = res.data.user.id;
+
+      // 2. Upload document & trigger AI
+      setAiScanning(true);
+      return axios.post('https://stayfind-backend-etba.onrender.com/api/auth/upload-document', {
+        userId: userId,
+        documentBase64: documentPreview,
+        role: role
+      });
+    })
+    .then(docRes => {
+      setAiResult(docRes.data.user);
+      setAiScanning(false);
+      setLoading(false);
+      
+      // Wait 4 seconds so user can read the AI result, then redirect
+      setTimeout(() => {
+        navigate('/login');
+      }, 4000);
     })
     .catch(err => {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
-    })
-    .finally(() => {
       setLoading(false);
+      setAiScanning(false);
     });
   };
 
@@ -160,6 +200,28 @@ const Register = () => {
               </div>
             )}
 
+            {/* 🆕 DOCUMENT UPLOAD SECTION */}
+            <div className="form-group" style={{ background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px dashed #cbd5e1', marginBottom: '20px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                <FaFileUpload /> 
+                {role === 'student' ? 'Upload Admission Letter *' : 'Upload Chief Letter (Proof of Ownership) *'}
+              </label>
+              
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileChange} 
+                style={{ display: 'block', width: '100%', padding: '10px', background: 'white', borderRadius: '8px', border: '1px solid #ccc' }} 
+              />
+              
+              {documentPreview && (
+                <div style={{ marginTop: '10px' }}>
+                  <p style={{ fontSize: '0.8rem', color: '#16a34a', marginBottom: '5px' }}>✅ Document selected for upload</p>
+                  <img src={documentPreview} alt="Preview" style={{ height: '80px', borderRadius: '4px', border: '1px solid #ddd' }} />
+                </div>
+              )}
+            </div>
+
             <div className="form-group">
               <label>Password</label>
               <div style={{ position: 'relative' }}>
@@ -201,9 +263,9 @@ const Register = () => {
               type="submit" 
               className="btn btn-primary" 
               style={{ width: '100%', padding: '14px', marginTop: '10px' }}
-              disabled={loading}
+              disabled={loading || aiScanning}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Processing...' : 'Create Account'}
             </button>
           </form>
 
@@ -212,6 +274,28 @@ const Register = () => {
           </p>
         </div>
       </div>
+
+      {/* 🆕 AI SCANNING OVERLAY */}
+      {aiScanning && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255,255,255,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <FaRobot size={60} color="var(--primary)" style={{ animation: 'pulse 1.5s infinite' }} />
+          <h2 style={{ marginTop: '20px', color: 'var(--text-main)' }}>AI Reading Document...</h2>
+          <p style={{ color: '#64748b', marginTop: '10px' }}>Extracting text and verifying eligibility...</p>
+        </div>
+      )}
+
+      {/* 🆕 AI SUCCESS OVERLAY */}
+      {aiResult && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255,255,255,0.98)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <FaCheckCircle size={70} color="#16a34a" />
+          <h2 style={{ marginTop: '20px', color: '#16a34a', fontSize: '2rem' }}>Document Verified!</h2>
+          <p style={{ color: '#333', maxWidth: '400px', textAlign: 'center', marginTop: '15px', fontSize: '1.1rem' }}>
+            {aiResult.ai_verification_note}
+          </p>
+          <p style={{ color: '#64748b', marginTop: '30px', fontSize: '0.9rem' }}>Redirecting to login...</p>
+        </div>
+      )}
+
     </div>
   );
 };

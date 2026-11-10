@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+:root {
+  /* NEW PROFESSIONAL COLOR PALETTE */
+  --primary: #0ea5e9;       /* Sky Blue 500 (Main brand color) */
+  --primary-dark: #0284c7;  /* Sky Blue 600 (Hover states) */
+  --accent: #14b8a6;        /* Teal 500 (For success/positive actions) */
+  --bg: #f8fafc;            /* Slate 50 (Very light grey background) */
+  --text-main: #0f172a;     /* Slate 900 (Dark text, better than pure black) */
+  --text-muted: #64748b;    /* Slate 500 (For subtitles and secondary text) */
+  --white: #ffffff;
+  --danger: #ef4444;        /* Red 500 */
+  --border: #e2e8f0;        /* Light border color */
+}
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+  font-family: 'Inter', sans-serif; 
+}
+
+body { 
+  background-color: var(--bg); 
+  color: var(--text-main); 
+  line-height: 1.6;
+}
+
+.container { 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: 20px; 
+}
+
+/* NAVBAR */
+.navbar { 
+  background: var(--white); 
+  color: var(--text-main); 
+  padding: 15px 20px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-brand {
+  color: var(--primary); 
+  text-decoration: none; 
+  font-size: 1.6rem; 
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.nav-links { display: flex; align-items: center; }
+.nav-links a { 
+  color: var(--text-main); 
+  text-decoration: none; 
+  margin-left: 25px; 
+  font-weight: 600; 
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--primary); }
+
+/* FORMS */
+.form-group { margin-bottom: 20px; }
+.form-group label { 
+  display: block; 
+  margin-bottom: 8px; 
+  font-weight: 600; 
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+.form-group input, .form-group select, .form-group textarea { 
+  width: 100%; 
+  padding: 12px 15px; 
+  border: 1px solid var(--border); 
+  border-radius: 8px; 
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+/* BUTTONS */
+.btn { 
+  padding: 12px 24px; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-primary { background: var(--primary); color: var(--white); }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-accent { background: var(--accent); color: var(--white); }
+.btn-accent:hover { background: #0d9488; transform: translateY(-1px); }
+.btn-danger { background: var(--danger); color: var(--white); }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+.btn-outline:hover { background: var(--primary); color: var(--white); }
+
+/* CARDS */
+/* Update the Grid Layout */
+.grid { 
+  display: grid; 
+  /* This forces exactly 3 columns on desktop, 2 on tablet, 1 on mobile */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+  gap: 25px; 
+  margin-top: 30px; 
+}
+
+/* Update the Card Layout */
+.card { 
+  background: var(--white); 
+  border-radius: 12px; 
+  padding: 24px; 
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover { 
+  transform: translateY(-4px); 
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+}
+
+/* Force 3 columns max on large screens so they don't get too wide */
+@media (min-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* BADGES */
+.badge { 
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px; 
+  border-radius: 20px; 
+  font-size: 0.75rem; 
+  font-weight: 700; 
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-green { background: #ccfbf1; color: #115e59; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-yellow { background: #fef3c7; color: #92400e; }
+.badge-blue { background: #e0f2fe; color: #0369a1; }
+
+/* DASHBOARD STATS */
+.stat-card { 
+  background: var(--white); 
+  padding: 25px; 
+  border-radius: 12px; 
+  text-align: center; 
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.stat-card h2 { font-size: 2.2rem; color: var(--text-main); margin-bottom: 5px; font-weight: 800; }
+.stat-card p { color: var(--text-muted); font-weight: 600; font-size: 0.9rem;}
+
+/* TABLES */
+table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--white); border-radius: 8px; overflow: hidden; }
+th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background-color: var(--bg); font-weight: 700; color: var(--text-main); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;}
+tr:last-child td { border-bottom: none; }
+/* Add this to the bottom of App.css */
+.full-screen-page {
+  width: 100vw; /* Takes up the full width of the screen */
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  min-height: calc(100vh - 75px); /* Fills the screen height minus the navbar */
+  display: flex;
+  flex-direction: row;
+}
+
+/* For mobile screens, stack the image and form */
+@media (max-width: 768px) {
+  .full-screen-page {
+    flex-direction: column;
+  }
+  .full-screen-left {
+    display: none; /* Hide the image on mobile so the form fits */
+  }
+}
+/* Allow the homepage to be truly full-width */
+.full-width-home {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  margin-top: -20px; /* Pulls it up under the navbar */
+}
+/* Add to the very top of App.css */
+/* Stack dashboard columns on mobile */
+@media (max-width: 900px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
